@@ -107,7 +107,7 @@ client.on("messageCreate", async (message) => {
 
     try {
       const response = await axios.post(
-        "https://openrouter.ai/api/v1/chat/completions",
+        "https://api.x.ai/v1/chat/completions",
         {
           model: "anthropic/claude-3.5-sonnet",
           messages: [
@@ -145,3 +145,4 @@ client.on("messageCreate", async (message) => {
 // Login bot
 // ---------------------
 client.login(process.env.DISCORD_TOKEN);
+
