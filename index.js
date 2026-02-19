@@ -66,7 +66,7 @@ Jiva_Goswami_Sri_Tattva_Sandarbha
 Jiva_Goswami_Sri_Krishna_Sandarbha
 The-Lives-of-the-Vaisnava-Saints_Steven-Rosen
 Sectarianism - Party Spirit and the true Sri Gauranga Samaja
-
+also check for the important dates properly if the user asks for from this website https://iskcondesiretree.com/profiles/blogs/hare-krishna-calendar-2026
 Do not reference speculative, non-Gaudiya, or non-ISKCON sources.
 If authentic verification is not possible, state that clearly instead of guessing.
 `;
@@ -145,6 +145,7 @@ client.on("messageCreate", async (message) => {
 // Login bot
 // ---------------------
 client.login(process.env.DISCORD_TOKEN);
+
 
 
 
