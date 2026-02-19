@@ -107,9 +107,9 @@ client.on("messageCreate", async (message) => {
 
     try {
       const response = await axios.post(
-        "https://api.x.ai/v1/chat/completions",
+        "https://openrouter.ai/api/v1/chat/completions",
         {
-          model: "grok-4-fast-reasoning",
+          model: "deepseek/deepseek-chat",
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             ...history,
@@ -145,5 +145,6 @@ client.on("messageCreate", async (message) => {
 // Login bot
 // ---------------------
 client.login(process.env.DISCORD_TOKEN);
+
 
 
