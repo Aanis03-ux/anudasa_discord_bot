@@ -1,18 +1,17 @@
-require('dotenv').config();
+require("dotenv").config();
+const { Client, GatewayIntentBits } = require("discord.js");
+const axios = require("axios");
 
-const { Client, GatewayIntentBits } = require('discord.js');
-const axios = require('axios');
-
-// Create Discord client
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+    GatewayIntentBits.MessageContent,
+  ],
 });
 
-// Your KC AI system prompt
+const conversations = new Map();
+
 const SYSTEM_PROMPT = `
 You are a Krishna-conscious assistant. Always reply from a Krishna-conscious point of view.
 Begin with or include the greeting "Hare Kṛṣṇa" and ask for obeisances. Be humble and polite.
@@ -53,46 +52,65 @@ Sectarianism - Party Spirit and the true Sri Gauranga Samaja
 
 Do not reference speculative, non-Gaudiya, or non-ISKCON sources.
 If authentic verification is not possible, state that clearly instead of guessing.
-
-
 `;
 
-// When bot is ready
-client.on('ready', () => {
+client.once("clientReady", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-// When message is sent
-client.on('messageCreate', async (message) => {
-  if (message.author.bot) return;
-  if (!message.mentions.has(client.user)) return;
-
-
+client.on("messageCreate", async (message) => {
   try {
+    if (message.author.bot) return;
+
+    // Only respond if bot is mentioned
+    if (!message.mentions.has(client.user)) return;
+
+    await message.channel.sendTyping();
+
+    const userMessage = message.content.replace(
+      `<@${client.user.id}>`,
+      ""
+    ).trim();
+
+    if (!userMessage) return;
+
+    // Retrieve history
+    let history = conversations.get(message.channel.id) || [];
+
+    // Add user message
+    history.push({ role: "user", content: userMessage });
+
+    // Limit memory (last 10 messages)
+    if (history.length > 10) {
+      history = history.slice(-10);
+    }
+
+    conversations.set(message.channel.id, history);
+
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
-        model: "openai/gpt-4o-mini", // Change if using another model
+        model: "anthropic/claude-3.5-sonnet",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: message.content }
-        ]
+          ...history,
+        ],
       },
       {
         headers: {
-          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json"
-        }
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+        },
       }
     );
 
-    const reply = response.data.choices[0].message.content;
+    const botReply = response.data.choices[0].message.content;
 
-    if (reply) {
-      await message.reply(reply);
-    } else {
-      await message.reply("⚠️ No response from model.");
-    }
+    // Save assistant reply to memory
+    history.push({ role: "assistant", content: botReply });
+    conversations.set(message.channel.id, history);
+
+    await message.reply(botReply);
 
   } catch (error) {
     console.error("OpenRouter Error:", error.response?.data || error.message);
@@ -100,6 +118,4 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-// Login bot
-client.login(process.env.BOT_TOKEN);
-
+client.login(process.env.DISCORD_TOKEN);
