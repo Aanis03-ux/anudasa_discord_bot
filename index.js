@@ -1,8 +1,23 @@
 require("dotenv").config();
 const { Client, GatewayIntentBits } = require("discord.js");
 const axios = require("axios");
+const express = require("express");
 
-// Discord client setup
+// ---------------------
+// Tiny Express server for Render
+// ---------------------
+const app = express();
+app.get("/", (req, res) => {
+  res.send("Anudasa Bot is running 🕉️ Hare Kṛṣṇa!");
+});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🌐 Web server running on port ${PORT}`);
+});
+
+// ---------------------
+// Discord bot setup
+// ---------------------
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -11,7 +26,6 @@ const client = new Client({
   ],
 });
 
-// Keep conversation history per channel
 const conversations = new Map();
 
 // Krishna-conscious system prompt
@@ -57,70 +71,77 @@ Do not reference speculative, non-Gaudiya, or non-ISKCON sources.
 If authentic verification is not possible, state that clearly instead of guessing.
 `;
 
-// Log when bot is ready
+// ---------------------
+// Bot events
+// ---------------------
 client.once("clientReady", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
-// Respond to messages
 client.on("messageCreate", async (message) => {
   try {
-    // Ignore bots
     if (message.author.bot) return;
 
-    // Only respond if mentioned
+    // Only respond if bot is mentioned
     if (!message.mentions.has(client.user)) return;
 
     await message.channel.sendTyping();
 
-    // Remove mention from message
-    const userMessage = message.content.replace(`<@${client.user.id}>`, "").trim();
+    const userMessage = message.content.replace(
+      `<@${client.user.id}>`,
+      ""
+    ).trim();
+
     if (!userMessage) return;
 
-    // Retrieve history
+    // Retrieve conversation history (last 10 messages)
     let history = conversations.get(message.channel.id) || [];
-
-    // Add user message
     history.push({ role: "user", content: userMessage });
-
-    // Limit memory to last 5 messages
-    if (history.length > 5) {
-      history = history.slice(-5);
-    }
+    if (history.length > 10) history = history.slice(-10);
     conversations.set(message.channel.id, history);
 
-    // Call OpenRouter Claude API
-    const response = await axios.post(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        model: "anthropic/claude-3.5-sonnet",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...history,
-        ],
-        max_tokens: 500, // limit tokens to fit free credit
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
+    // ---------------------
+    // OpenRouter API request
+    // ---------------------
+    let botReply = null;
+
+    try {
+      const response = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          model: "anthropic/claude-3.5-sonnet",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            ...history,
+          ],
+          max_tokens: 500, // adjust for your free credits
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    const botReply = response.data.choices[0].message.content;
+      botReply = response.data.choices[0].message.content;
 
-    // Save bot reply in history
-    history.push({ role: "assistant", content: botReply });
-    conversations.set(message.channel.id, history);
+      // Save assistant reply to memory
+      history.push({ role: "assistant", content: botReply });
+      conversations.set(message.channel.id, history);
 
-    await message.reply(botReply);
+      await message.reply(botReply);
+    } catch (err) {
+      console.error("OpenRouter Error:", err.response?.data || err.message);
+      if (!botReply) await message.reply("❌ Error generating response.");
+    }
 
   } catch (error) {
-    console.error("OpenRouter Error:", error.response?.data || error.message);
-    await message.reply("❌ Error generating response.");
+    console.error("Bot Error:", error);
   }
 });
 
-// Log in Discord
+// ---------------------
+// Login bot
+// ---------------------
 client.login(process.env.DISCORD_TOKEN);
