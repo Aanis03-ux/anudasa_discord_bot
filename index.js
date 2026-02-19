@@ -109,7 +109,7 @@ client.on("messageCreate", async (message) => {
       const response = await axios.post(
         "https://api.x.ai/v1/chat/completions",
         {
-          model: "anthropic/claude-3.5-sonnet",
+          model: "grok-4-fast-reasoning",
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             ...history,
@@ -145,4 +145,5 @@ client.on("messageCreate", async (message) => {
 // Login bot
 // ---------------------
 client.login(process.env.DISCORD_TOKEN);
+
 
