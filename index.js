@@ -2,6 +2,7 @@ require("dotenv").config();
 const { Client, GatewayIntentBits } = require("discord.js");
 const axios = require("axios");
 
+// Discord client setup
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -10,8 +11,10 @@ const client = new Client({
   ],
 });
 
+// Keep conversation history per channel
 const conversations = new Map();
 
+// Krishna-conscious system prompt
 const SYSTEM_PROMPT = `
 You are a Krishna-conscious assistant. Always reply from a Krishna-conscious point of view.
 Begin with or include the greeting "Hare Kṛṣṇa" and ask for obeisances. Be humble and polite.
@@ -54,24 +57,24 @@ Do not reference speculative, non-Gaudiya, or non-ISKCON sources.
 If authentic verification is not possible, state that clearly instead of guessing.
 `;
 
+// Log when bot is ready
 client.once("clientReady", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
+// Respond to messages
 client.on("messageCreate", async (message) => {
   try {
+    // Ignore bots
     if (message.author.bot) return;
 
-    // Only respond if bot is mentioned
+    // Only respond if mentioned
     if (!message.mentions.has(client.user)) return;
 
     await message.channel.sendTyping();
 
-    const userMessage = message.content.replace(
-      `<@${client.user.id}>`,
-      ""
-    ).trim();
-
+    // Remove mention from message
+    const userMessage = message.content.replace(`<@${client.user.id}>`, "").trim();
     if (!userMessage) return;
 
     // Retrieve history
@@ -80,13 +83,13 @@ client.on("messageCreate", async (message) => {
     // Add user message
     history.push({ role: "user", content: userMessage });
 
-    // Limit memory (last 10 messages)
-    if (history.length > 10) {
-      history = history.slice(-10);
+    // Limit memory to last 5 messages
+    if (history.length > 5) {
+      history = history.slice(-5);
     }
-
     conversations.set(message.channel.id, history);
 
+    // Call OpenRouter Claude API
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
@@ -95,6 +98,7 @@ client.on("messageCreate", async (message) => {
           { role: "system", content: SYSTEM_PROMPT },
           ...history,
         ],
+        max_tokens: 500, // limit tokens to fit free credit
       },
       {
         headers: {
@@ -106,7 +110,7 @@ client.on("messageCreate", async (message) => {
 
     const botReply = response.data.choices[0].message.content;
 
-    // Save assistant reply to memory
+    // Save bot reply in history
     history.push({ role: "assistant", content: botReply });
     conversations.set(message.channel.id, history);
 
@@ -118,4 +122,5 @@ client.on("messageCreate", async (message) => {
   }
 });
 
+// Log in Discord
 client.login(process.env.DISCORD_TOKEN);
