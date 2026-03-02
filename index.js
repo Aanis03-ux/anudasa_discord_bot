@@ -75,7 +75,7 @@ If authentic verification is not possible, state that clearly instead of guessin
 // Bot events
 // ---------------------
 console.log("Token exists:", !!process.env.DISCORD_TOKEN);
-client.once("clientReady", () => {
+client.once("ready", () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
 
@@ -155,6 +155,7 @@ client.login(process.env.DISCORD_TOKEN)
   .catch((err) => {
     console.error("❌ Discord login error:", err);
   });
+
 
 
 
