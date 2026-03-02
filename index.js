@@ -167,6 +167,24 @@ client.login(process.env.DISCORD_TOKEN)
     console.error("❌ Discord login error:", err);
   });
 
+const https = require("https");
+
+console.log("Testing token via REST API...");
+
+https.get(
+  {
+    hostname: "discord.com",
+    path: "/api/v10/users/@me",
+    headers: {
+      Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
+    },
+  },
+  (res) => {
+    console.log("Status Code:", res.statusCode);
+  }
+).on("error", (err) => {
+  console.error("HTTPS error:", err);
+});
 
 
 
