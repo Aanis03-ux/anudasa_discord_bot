@@ -145,7 +145,17 @@ client.on("messageCreate", async (message) => {
 // ---------------------
 // Login bot
 // ---------------------
-client.login(process.env.DISCORD_TOKEN);
+// ---------------------
+// Login bot (with proper debugging)
+// ---------------------
+client.login(process.env.DISCORD_TOKEN)
+  .then(() => {
+    console.log("🚀 Discord login success");
+  })
+  .catch((err) => {
+    console.error("❌ Discord login error:", err);
+  });
+
 
 
 
