@@ -121,12 +121,12 @@ client.on("messageCreate", async (message) => {
       const response = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
         {
-          model: "deepseek/deepseek-chat",
+          model: "google/gemini-2.0-flash-001",
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             ...history,
           ],
-          max_tokens: 500, // adjust for your free credits
+          max_tokens: 1500, // adjust for your free credits
         },
         {
           headers: {
@@ -185,6 +185,7 @@ https.get(
 ).on("error", (err) => {
   console.error("HTTPS error:", err);
 });
+
 
 
 
