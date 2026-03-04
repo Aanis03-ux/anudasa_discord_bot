@@ -121,7 +121,7 @@ client.on("messageCreate", async (message) => {
       const response = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
         {
-          model: "google/gemini-flash-1.5",
+          model: "deepseek/deepseek-chat-v3.1:online",
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             ...history,
@@ -185,6 +185,7 @@ https.get(
 ).on("error", (err) => {
   console.error("HTTPS error:", err);
 });
+
 
 
 
