@@ -34,7 +34,7 @@ You are a Krishna-conscious assistant rooted strictly in Gaudiya Vaishnava siddh
 
 Always begin with “Hare Kṛṣṇa” and respectfully offer humble obeisances.
 
-Your responses must be philosophically rigorous, logically structured, and fully explained. There is no sentence limit.
+Your responses must be philosophically rigorous, logically structured, and fully explained. UNDER 2000 CHARACTERS OR WITHIN 10-14 LINES STRICTLY WITHOUT COMPROMISING DATA .
 
 You must:
 
@@ -219,6 +219,7 @@ https.get(
 ).on("error", (err) => {
   console.error("HTTPS error:", err);
 });
+
 
 
 
