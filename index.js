@@ -102,6 +102,12 @@ At the end of every response include:
 
 Sources:
 - [Full direct URLs used]
+BEFORE responding, perform a 'Mental Check':
+Identify the specific personalities or verses requested.
+Cross-reference them with the authorized texts listed below.
+If the identity is not explicitly mentioned in Gaura-ganoddesa-dipika or the Sandarbhas, state: 'This specific detail is not found in my primary authorized texts.'
+
+
 
 `;
 
@@ -160,7 +166,8 @@ client.on("messageCreate", async (message) => {
             { role: "system", content: SYSTEM_PROMPT },
             ...history,
           ],
-          max_tokens: 1500, // adjust for your free credits
+          max_tokens: 1500,
+          temperature: 0.1,// adjust for your free credits
         },
         {
           headers: {
@@ -219,6 +226,7 @@ https.get(
 ).on("error", (err) => {
   console.error("HTTPS error:", err);
 });
+
 
 
 
